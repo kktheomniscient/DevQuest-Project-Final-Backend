@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # <-- Import Flask-CORS
 from feature_extraction import extract_features
 from ayurvedic_integration import map_to_ayurvedic_principles
 
 app = Flask(__name__)
+
+# Enable CORS for all routes
+CORS(app)
 
 # Default nail region (standard value)
 DEFAULT_NAIL_REGION = (10, 20, 50, 60)  # Example coordinates [x1, y1, x2, y2]
@@ -12,8 +16,13 @@ def analyze():
     try:
         # Parse JSON payload
         data = request.json
+<<<<<<< HEAD
         face_image_path = data.get('DevQuest-Project-Final-Backend\pics\pic_mid.png')
         nail_image_path = data.get('DevQuest-Project-Final-Backend\pics\image.png')
+=======
+        face_image_path = data.get('./pics')
+        nail_image_path = data.get('./pics')
+>>>>>>> 603bfeed57a4ea505627d175d69ef6db44fa0822
 
         if not (face_image_path and nail_image_path):
             return jsonify({"error": "Invalid input. Please provide both face and nail image paths."}), 400

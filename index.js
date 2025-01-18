@@ -26,7 +26,7 @@ app.use(cors({
 }))
 app.use(cookieParser())
 
-mongoose.connect("mongodb+srv://mijiwim751:aZ8uW2FwMzXKBj3C@cluster0.moybr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect("mongodb+srv://admin:gunpoint@dqcluster.hlv4t.mongodb.net/?retryWrites=true&w=majority&appName=dqcluster")
 mongoose.connection.on('connected', () => {
     console.log("DB connected")
 })
@@ -149,7 +149,21 @@ const verifyUser = (req, res, next) => {
 app.get('/patient', verifyUser, (req, res) => {
     return res.json("Success")
 })
-
+app.get('/profile', verifyUser, (req, res) => {
+    return res.json("Success")
+})
+app.get('/measurement', verifyUser, (req, res) => {
+    return res.json("Success")
+})
+app.get('/taketest', verifyUser, (req, res) => {
+    return res.json("Success")
+})
+app.get('/navbar', verifyUser, (req, res) => {
+    return res.json("Success")
+})
+app.get('/dashboard', verifyUser, (req, res) => {
+    return res.json("Success")
+})
 
 //put in the react comp og what u want protected
 // axios.defaults.withCredentials = true
@@ -299,3 +313,19 @@ const clearDirectory = (dirPath) => {
         console.error('Error clearing directory:', err);
     }
 };
+
+app.get('/profileInfo', async (req, res) => {
+    const token = req.cookies.token;
+    let email
+    jwt.verify(token, 'secret', (err, decoded) => {
+        email = decoded.email
+        //console.log(email)
+    })
+    const user = await AuthModel.findOne({email: email})
+    //console.log(user.number)
+    return res.json({
+        email: user.email,
+        fullname: user.fullname,
+        mobile: user.number
+    })
+})
