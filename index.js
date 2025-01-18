@@ -7,6 +7,9 @@ const cookieParser = require('cookie-parser')
 const nodemailer = require('nodemailer')
 const AuthModel = require('./model/AuthModel')
 const ExpertAuthModel = require('./model/ExpertAuthModel')
+const multer = require('multer')
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 app.use(express.json())
@@ -189,3 +192,34 @@ app.post('/ExpertLogin', (req, res) => {
             }
         })
 })
+
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true }); // Create the 'uploads' directory if it doesn't exist
+}
+
+// Set up multer storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // Files will be saved in the 'uploads' directory
+    },
+    filename: (req, file, cb) => {
+        // Save the file with a unique name using timestamp to avoid collisions
+        cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+// Set up POST endpoint for file upload
+app.post("/upload", upload.single("file"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send("No file uploaded.");
+    }
+    
+    // Send a response back with the uploaded file's name
+    res.send({
+        message: "File uploaded successfully.",
+        file: req.file, // Send details of the uploaded file (including name, path, etc.)
+    });
+});
