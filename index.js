@@ -26,7 +26,7 @@ app.use(cors({
 }))
 app.use(cookieParser())
 
-mongoose.connect("mongodb+srv://mijiwim751:aZ8uW2FwMzXKBj3C@cluster0.moybr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect("mongodb+srv://admin:gunpoint@dqcluster.hlv4t.mongodb.net/?retryWrites=true&w=majority&appName=dqcluster")
 mongoose.connection.on('connected', () => {
     console.log("DB connected")
 })
