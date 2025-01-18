@@ -12,8 +12,8 @@ def analyze():
     try:
         # Parse JSON payload
         data = request.json
-        face_image_path = data.get('face_image_path')
-        nail_image_path = data.get('nail_image_path')
+        face_image_path = data.get('DevQuest-Project-Final-Backend\pics\pic_mid.png')
+        nail_image_path = data.get('DevQuest-Project-Final-Backend\pics\image.png')
 
         if not (face_image_path and nail_image_path):
             return jsonify({"error": "Invalid input. Please provide both face and nail image paths."}), 400
