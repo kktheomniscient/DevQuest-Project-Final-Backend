@@ -38,42 +38,26 @@ def extract_dark_circles(image):
             return mean_intensity
     return None
 
-# Function to extract nail color
-def extract_nail_color(image, nail_region):
-    nail_region = image[nail_region[1]:nail_region[3], nail_region[0]:nail_region[2]]
-    avg_color = np.mean(nail_region, axis=(0, 1))
-    return avg_color
 
-# Function to extract nail texture using LBP
-def extract_nail_texture(image, nail_region):
-    nail_image = cv2.cvtColor(image[nail_region[1]:nail_region[3], nail_region[0]:nail_region[2]], cv2.COLOR_BGR2GRAY)
-    lbp = local_binary_pattern(nail_image, P=8, R=1, method='uniform')
-    lbp_hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, 59), range=(0, 58))
-    lbp_hist = lbp_hist.astype(np.float32)
-    lbp_hist /= (lbp_hist.sum() + 1e-6)
-    return lbp_hist
+
+
 
 # Main function to extract features from both face and nails
-def extract_features(face_image_path, nail_image_path, nail_region):
+def extract_features(face_image_path):
     face_image = cv2.imread(face_image_path)
-    nail_image = cv2.imread(nail_image_path)
     
-    if face_image is None or nail_image is None:
-        print("Error: One or both image paths are incorrect.")
+    if face_image is None:
+        print("Error: Face image path is incorrect.")
         return None
 
-    # Extract features
+    # Extract features from the face image
     skin_tone = extract_skin_tone(face_image)
     skin_texture = extract_skin_texture(face_image)
     dark_circles_intensity = extract_dark_circles(face_image)
-    nail_color = extract_nail_color(nail_image, nail_region)
-    nail_texture = extract_nail_texture(nail_image, nail_region)
 
     # Return features as a dictionary
     return {
         'skin_tone': skin_tone,
         'skin_texture': skin_texture,
-        'dark_circles': dark_circles_intensity,
-        'nail_color': nail_color,
-        'nail_texture': nail_texture
+        'dark_circles': dark_circles_intensity
     }

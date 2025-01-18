@@ -13,6 +13,7 @@ const path = require("path");
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const ffprobePath = require('ffprobe-static').path;
+const {exec} = require('child_process')
 
 ffmpeg.setFfprobePath(ffprobePath);
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -276,23 +277,6 @@ if (!fs.existsSync(outputDirectory)) {
 
 const outputPath = path.join(outputDirectory, 'frame_at_middle.jpg');
 
-app.post("/upload", upload.single("file"), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send("No file uploaded.");
-    }
-
-    // Send a response back with the uploaded file's name
-    //console.log(req.file)
-    res.send({
-        message: "File uploaded successfully.",
-        file: req.file, // Send details of the uploaded file (including name, path, etc.)
-    });
-    const videoPath = './uploads/vid.mp4';
-    const duration =  await getVideoDuration(videoPath)
-    //console.log(duration)
-    extractFrame(videoPath,duration,picDir)
-});
-
 const clearDirectory = (dirPath) => {
     try {
         if (!fs.existsSync(dirPath)) {
@@ -309,11 +293,50 @@ const clearDirectory = (dirPath) => {
             }
         });
 
-        console.log(`All files in directory "${dirPath}" have been deleted.`);
+        //console.log(`All files in directory "${dirPath}" have been deleted.`);
     } catch (err) {
         console.error('Error clearing directory:', err);
     }
 };
+
+app.post("/upload", upload.single("file"), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).send("No file uploaded.");
+    }
+
+    const videoPath = './uploads/vid.mp4';
+    const duration = await getVideoDuration(videoPath);
+
+    try {
+        // Extract the frame
+        await extractFrame(videoPath, duration, picDir);
+
+        // Execute Python script
+        exec('python C:\\Users\\Aspire\\Desktop\\my_code\\devquest_full\\backend\\MLmodelfetching\\api.py', (error, stdout, stderr) => {
+            if (error || stderr) {
+                console.error("Error executing Python script:", error || stderr);
+                return res.status(500).send({
+                    message: "Error processing the file.",
+                    error: error || stderr,
+                });
+            }
+
+            // Send success response with the stdout from the Python script
+            res.send({
+                message: "File processed successfully.",
+                pythonOutput: stdout,
+                file: req.file,
+            });
+        });
+    } catch (error) {
+        console.error("Error during processing:", error);
+        res.status(500).send({
+            message: "Error during processing.",
+            error: error.message,
+        });
+    }
+});
+
 
 app.get('/profileInfo', async (req, res) => {
     const token = req.cookies.token;

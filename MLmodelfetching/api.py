@@ -1,48 +1,18 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # <-- Import Flask-CORS
+import os
 from feature_extraction import extract_features
 from ayurvedic_integration import map_to_ayurvedic_principles
 
-app = Flask(__name__)
+# face_image_path = os.path.abspath('../pics/pic_mid.png')
+face_image_path = 'C:\\Users\\Aspire\\Desktop\\my_code\\devquest_full\\backend\\pics\\pic_mid.png'
 
-# Enable CORS for all routes
-CORS(app)
+features = extract_features(face_image_path)
 
-# Default nail region (standard value)
-DEFAULT_NAIL_REGION = (10, 20, 50, 60)  # Example coordinates [x1, y1, x2, y2]
+# Map the extracted features to Ayurvedic principles and get recommendations
+ayurvedic_recommendations = map_to_ayurvedic_principles(features)
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    try:
-        # Parse JSON payload
-        data = request.json
-<<<<<<< HEAD
-        face_image_path = data.get('DevQuest-Project-Final-Backend\pics\pic_mid.png')
-        nail_image_path = data.get('DevQuest-Project-Final-Backend\pics\image.png')
-=======
-        face_image_path = data.get('./pics')
-        nail_image_path = data.get('./pics')
->>>>>>> 603bfeed57a4ea505627d175d69ef6db44fa0822
-
-        if not (face_image_path and nail_image_path):
-            return jsonify({"error": "Invalid input. Please provide both face and nail image paths."}), 400
-
-        # Use the default nail region
-        nail_region = DEFAULT_NAIL_REGION
-
-        # Extract features
-        features = extract_features(face_image_path, nail_image_path, nail_region)
-        if features is None:
-            return jsonify({"error": "Error extracting features. Check image paths and nail region."}), 400
-
-        # Map features to Ayurvedic recommendations
-        recommendations = map_to_ayurvedic_principles(features)
-
-        # Return recommendations as JSON
-        return jsonify({"recommendations": recommendations})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(port=5000)
+# Print recommendations
+for rec in ayurvedic_recommendations:
+    print(f"Feature: {rec['feature']}")
+    print(f"Imbalance: {rec['imbalance']}")
+    print(f"Suggestion: {rec['suggestion']}")
+    # print("Features dictionary:", features)
