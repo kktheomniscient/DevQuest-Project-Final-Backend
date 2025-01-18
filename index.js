@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 const nodemailer = require('nodemailer')
 const AuthModel = require('./model/AuthModel')
+const ExpertAuthModel = require('./model/ExpertAuthModel')
 
 const app = express();
 app.use(express.json())
@@ -153,3 +154,35 @@ const verifyUser = (req, res, next) => {
 //                 navigate('/login')
 //             })
 //     }, [])
+
+app.post('/ExpertRegister', (req, res) => {
+    const { username, fullname, email, password, number } = req.body
+    bcrypt.hash(password, 10)
+        .then(hash => {
+            ExpertAuthModel.create({ username, fullname, email, password : hash, number  })
+                .then(data => res.json({ data }))
+                .catch(err => console.log(err))
+        }).catch(err => console.log(err.message))
+})
+
+app.post('/ExpertLogin', (req, res) => {
+    const { username, password } = req.body;
+    ExpertAuthModel.findOne({ username: username })
+        .then(user => {
+            if (user) {
+                bcrypt.compare(password, user.password, (err, response) => {
+                    if (response) {
+                        const token = jwt.sign({ email: user.email }, "secret", { expiresIn: "1d" })
+                        res.cookie("token", token)
+                        res.json("Success")
+                    }
+                    else {
+                        res.json("incorrect pass")
+                    }
+                })
+            }
+            else {
+                res.json("no such user")
+            }
+        })
+})
