@@ -165,7 +165,6 @@ app.get('/dashboard', verifyUser, (req, res) => {
     return res.json("Success")
 })
 
-
 //put in the react comp og what u want protected
 // axios.defaults.withCredentials = true
 //     useEffect(() => {
