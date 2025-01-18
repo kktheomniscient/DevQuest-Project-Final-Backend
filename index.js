@@ -158,6 +158,9 @@ app.get('/measurement', verifyUser, (req, res) => {
 app.get('/taketest', verifyUser, (req, res) => {
     return res.json("Success")
 })
+app.get('/navbar', verifyUser, (req, res) => {
+    return res.json("Success")
+})
 
 
 //put in the react comp og what u want protected
