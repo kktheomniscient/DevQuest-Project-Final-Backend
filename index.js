@@ -10,6 +10,12 @@ const ExpertAuthModel = require('./model/ExpertAuthModel')
 const multer = require('multer')
 const fs = require("fs");
 const path = require("path");
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+const ffprobePath = require('ffprobe-static').path;
+
+ffmpeg.setFfprobePath(ffprobePath);
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app = express();
 app.use(express.json())
@@ -33,7 +39,7 @@ app.post('/register', (req, res) => {
     const { username, fullname, email, password, number } = req.body
     bcrypt.hash(password, 10)
         .then(hash => {
-            AuthModel.create({ username, fullname, email, password : hash, number  })
+            AuthModel.create({ username, fullname, email, password: hash, number })
                 .then(data => res.json({ data }))
                 .catch(err => console.log(err))
         }).catch(err => console.log(err.message))
@@ -91,27 +97,27 @@ app.post('/forgotpass', (req, res) => {
                 if (error) {
                     console.log(error);
                 } else {
-                    return res.send({Status: "Success"});
+                    return res.send({ Status: "Success" });
                 }
             });
         })
 })
 
 app.post('/resetpass/:id/:token', (req, res) => {
-    const {id,token} = req.params
-    const {newPassword} = req.body
-    jwt.verify(token, "secret", (err,decode) => {
-        if(err){
+    const { id, token } = req.params
+    const { newPassword } = req.body
+    jwt.verify(token, "secret", (err, decode) => {
+        if (err) {
             //console.log("here2")
-            return res.json({Status: "Error with token"})
+            return res.json({ Status: "Error with token" })
         } else {
             bcrypt.hash(newPassword, 10)
-            .then(hash => {
-                AuthModel.findByIdAndUpdate({_id: id}, {password: hash})
-                .then(updated => {res.send({Status: "Success"})})
-                .catch(err => {res.send({status: err})})
-            })
-            .catch(err => {res.send({Status: err})})
+                .then(hash => {
+                    AuthModel.findByIdAndUpdate({ _id: id }, { password: hash })
+                        .then(updated => { res.send({ Status: "Success" }) })
+                        .catch(err => { res.send({ status: err }) })
+                })
+                .catch(err => { res.send({ Status: err }) })
         }
     })
 })
@@ -165,7 +171,7 @@ app.post('/ExpertRegister', (req, res) => {
     const { username, fullname, email, password, number } = req.body
     bcrypt.hash(password, 10)
         .then(hash => {
-            ExpertAuthModel.create({ username, fullname, email, password : hash, number  })
+            ExpertAuthModel.create({ username, fullname, email, password: hash, number })
                 .then(data => res.json({ data }))
                 .catch(err => console.log(err))
         }).catch(err => console.log(err.message))
@@ -205,21 +211,69 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         // Save the file with a unique name using timestamp to avoid collisions
-        cb(null, file.originalname);
+        cb(null, 'vid.mp4');
     },
 });
 
 const upload = multer({ storage: storage });
 
 // Set up POST endpoint for file upload
-app.post("/upload", upload.single("file"), (req, res) => {
+
+const getVideoDuration = (videoPath) => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(videoPath, (err, metadata) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(metadata.format.duration); // Returns duration in seconds
+            }
+        });
+    });
+};
+
+const picDir = path.join(__dirname, "pics");
+if (!fs.existsSync(picDir)) {
+    fs.mkdirSync(picDir, { recursive: true }); // Create the 'uploads' directory if it doesn't exist
+}
+
+
+
+const extractFrame = (videoPath, duration , picDir) => {
+    ffmpeg(videoPath)
+        .on('end', () => {
+            console.log('Frame extracted successfully!');
+        })
+        .on('error', (err) => {
+            console.error('Error occurred:', err);
+        })
+        .screenshots({
+            count: 1,
+            timemarks: [duration/2],  // specify the timestamp in seconds
+            filename: 'pic_mid',        // specify the output file name
+            folder: './pics',                 // specify the output folder
+        });
+};
+
+const outputDirectory = path.resolve(__dirname, './frames');
+if (!fs.existsSync(outputDirectory)) {
+    fs.mkdirSync(outputDirectory);
+}
+
+const outputPath = path.join(outputDirectory, 'frame_at_middle.jpg');
+
+app.post("/upload", upload.single("file"), async (req, res) => {
     if (!req.file) {
         return res.status(400).send("No file uploaded.");
     }
-    
+
     // Send a response back with the uploaded file's name
+    //console.log(req.file)
     res.send({
         message: "File uploaded successfully.",
         file: req.file, // Send details of the uploaded file (including name, path, etc.)
     });
+    const videoPath = './uploads/vid.mp4';
+    const duration =  await getVideoDuration(videoPath)
+    //console.log(duration)
+    extractFrame(videoPath,duration,picDir)
 });
