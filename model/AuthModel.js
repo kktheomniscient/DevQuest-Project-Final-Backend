@@ -5,8 +5,10 @@ const AuthSchema = new mongoose.Schema({
     fullname: String,
     email: String,
     password: String,
-    number: String,
-
+    mobile: String,
+    weight: String,
+    DOB: String,
+    gender: String
 })
 
 const AuthModel = mongoose.model("Auth", AuthSchema)

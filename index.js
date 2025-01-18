@@ -29,7 +29,7 @@ app.use(cookieParser())
 mongoose.connect("mongodb+srv://admin:gunpoint@dqcluster.hlv4t.mongodb.net/?retryWrites=true&w=majority&appName=dqcluster")
 mongoose.connection.on('connected', () => {
     console.log("DB connected")
-    
+
 })
 
 app.listen(3001, () => {
@@ -327,6 +327,48 @@ app.get('/profileInfo', async (req, res) => {
     return res.json({
         email: user.email,
         fullname: user.fullname,
-        mobile: user.number
+        mobile: user.number,
+        gender : user.gender,
+        dob : user.DOB,
+        height : user.height,
+        weight : user.weight
     })
 })
+
+app.get('/getemail', async (req,res) => {
+    const token = req.cookies.token;
+    let email
+    jwt.verify(token, 'secret', (err, decoded) => {
+        email = decoded.email
+        //console.log(email)
+    })
+    res.json(`${email}`)
+})
+
+app.post('/updatedb', async (req, res) => {
+    const { email, mobile, weight, dob, gender, } = req.body;
+
+    try {
+        // Find the patient by email (you can use another unique identifier if needed)
+        const patient = await Patient.findOne({ email });
+
+        if (!patient) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+
+        // Update the patient details
+        patient.mobile = mobile || patient.mobile;
+        patient.weight = weight || patient.weight;
+        patient.dob = dob || patient.dob;
+        patient.gender = gender || patient.gender;
+        patient.height = height || patient.height;
+
+        // Save the updated patient details
+        await patient.save();
+
+        return res.status(200).json({ message: 'Patient updated successfully', patient });
+    } catch (error) {
+        console.error('Error updating patient:', error);
+        return res.status(500).json({ message: 'Error updating patient', error });
+    }
+});
