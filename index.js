@@ -137,6 +137,9 @@ const verifyUser = (req, res, next) => {
 // app.get('/home', verifyUser, (req, res) => {
 //     return res.json("Success")
 // })
+app.get('/patient', verifyUser, (req, res) => {
+    return res.json("Success")
+})
 
 
 //put in the react comp og what u want protected
