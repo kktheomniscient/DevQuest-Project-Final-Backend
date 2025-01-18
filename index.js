@@ -320,9 +320,10 @@ app.get('/profileInfo', async (req, res) => {
     let email
     jwt.verify(token, 'secret', (err, decoded) => {
         email = decoded.email
-        console.log(email)
+        //console.log(email)
     })
     const user = await AuthModel.findOne({email: email})
+    //console.log(user.number)
     return res.json({
         email: user.email,
         fullname: user.fullname,
