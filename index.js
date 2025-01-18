@@ -161,6 +161,9 @@ app.get('/taketest', verifyUser, (req, res) => {
 app.get('/navbar', verifyUser, (req, res) => {
     return res.json("Success")
 })
+app.get('/dashboard', verifyUser, (req, res) => {
+    return res.json("Success")
+})
 
 
 //put in the react comp og what u want protected
@@ -311,3 +314,18 @@ const clearDirectory = (dirPath) => {
         console.error('Error clearing directory:', err);
     }
 };
+
+app.get('/profileInfo', async (req, res) => {
+    const token = req.cookies.token;
+    let email
+    jwt.verify(token, 'secret', (err, decoded) => {
+        email = decoded.email
+        console.log(email)
+    })
+    const user = await AuthModel.findOne({email: email})
+    return res.json({
+        email: user.email,
+        fullname: user.fullname,
+        mobile: user.number
+    })
+})
