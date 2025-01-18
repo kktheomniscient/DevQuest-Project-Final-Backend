@@ -29,6 +29,7 @@ app.use(cookieParser())
 mongoose.connect("mongodb+srv://admin:gunpoint@dqcluster.hlv4t.mongodb.net/?retryWrites=true&w=majority&appName=dqcluster")
 mongoose.connection.on('connected', () => {
     console.log("DB connected")
+    
 })
 
 app.listen(3001, () => {
