@@ -277,3 +277,25 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     //console.log(duration)
     extractFrame(videoPath,duration,picDir)
 });
+
+const clearDirectory = (dirPath) => {
+    try {
+        if (!fs.existsSync(dirPath)) {
+            console.error(`Directory not found: ${dirPath}`);
+            return;
+        }
+
+        const files = fs.readdirSync(dirPath);
+
+        files.forEach((file) => {
+            const filePath = path.join(dirPath, file);
+            if (fs.lstatSync(filePath).isFile()) {
+                fs.unlinkSync(filePath); // Delete the file
+            }
+        });
+
+        console.log(`All files in directory "${dirPath}" have been deleted.`);
+    } catch (err) {
+        console.error('Error clearing directory:', err);
+    }
+};
